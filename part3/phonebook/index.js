@@ -4,6 +4,12 @@ import morgan from  'morgan'
 const app = express();
 const PORT = 3000;
 
+morgan.token('body', (req, res) => {
+    if(req.method === 'POST') {
+        return JSON.stringify(req.body)
+    }
+})
+
 const data = [
     { 
       "id": "1",
@@ -29,6 +35,7 @@ const data = [
 
 app.use(express.json());
 app.use(morgan('tiny'))
+app.use(morgan(':method :url :status  - :response-time ms :body'))
 
 app.get('/api/persons', (req, res)=> {
    res.send(data)
