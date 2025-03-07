@@ -1,5 +1,9 @@
 import express from 'express';
 import morgan from  'morgan'
+import cors from 'cors';
+import 'dotenv/config';
+import contactModel from './model/contact.model.js';
+import mongoose from 'mongoose';
 
 const app = express();
 const PORT = 3000;
@@ -33,12 +37,21 @@ const data = [
     }
 ]
 
+mongoose.connect(process.env.MONGO_URI)
+ .then(() => {
+    console.log("Connected to mongodb")
+    
+ }).catch(error => console.log(error))
+
+ app.use(express.static('dist'))
 app.use(express.json());
+app.use(cors());
 app.use(morgan('tiny'))
 app.use(morgan(':method :url :status  - :response-time ms :body'))
 
-app.get('/api/persons', (req, res)=> {
-   res.send(data)
+app.get('/api/persons', async(req, res)=> {
+    const data = await contactModel.find({});
+   res.status(200).json({ message: "Successful", data})
 })
 
 app.get('/info', (req,res) => {
@@ -52,25 +65,29 @@ app.get('/info', (req,res) => {
         `)
 })
 
-app.get('/api/persons/:id', (req, res) => {
-    const id = parseInt(req.params.id);
+app.get('/api/persons/:id',async (req, res) => {
+    const id = req.params.id;
     console.log(id)
-    const person = data.find(p => p.id == id);
+    const person = await contactModel.findById(id);
     if(person) {
         return res.status(200).send(person)
     }
     return res.status(404).send("Entity not found(404)")
 })
 
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', async(req, res) => {
     const id = req.params.id;
-    const initialPhonebook = data.length;
-    const deleted = data.filter(p => p.id !== id);
+    // const initialPhonebook = data.length;
+    // const deleted = data.filter(p => p.id !== id);
 
-    if (data.length < initialPhonebook) {
-        res.status(204).send();
-    } else {
-        res.status(404).send("Entity not found");
+    // if (data.length < initialPhonebook) {
+    //     res.status(204).send();
+    // } else {
+    //     res.status(404).send("Entity not found");
+    // }
+    const deleted = await contactModel.findByIdAndDelete(id)
+    if(deleted) {
+        return  res.status(204).json();
     }
 })
 
