@@ -1,20 +1,6 @@
-import express from 'express';
-const app = express()
-import cors from 'cors';
-import mongoose from 'mongoose';
-import blogRouter from './routes/blog.route.js';
+import app from './app.js';
+import { PORT } from './utils/config.js';
 
-
-
-const mongoUrl = 'mongodb://localhost/bloglist'
-mongoose.connect(mongoUrl)
-
-app.use(cors())
-app.use(express.json())
-
-app.use('/api/blog', blogRouter);
-
-const PORT = 3000
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+  console.log("Server is running in port ", PORT);
 })
